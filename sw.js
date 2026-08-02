@@ -1,5 +1,5 @@
-const CACHE='budget-familial-v11-20260802';
-const ASSETS=['./','./index.html','./style.css?v=11.0','./app.js?v=11.0','./manifest.webmanifest','./icon-192.png','./icon-512.png'];
+const CACHE='budget-familial-v12-1-20260802';
+const ASSETS=['./','./index.html','./style.css?v=12.1','./app.js?v=12.1','./manifest.webmanifest','./icon-192.png','./icon-512.png'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)));self.skipWaiting();});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))));self.clients.claim();});
 self.addEventListener('fetch',event=>{

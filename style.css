@@ -17,3 +17,6 @@
 .field input, .field select, .filters input, .filters select { min-height: 44px; }
 .modal-actions button { min-height: 44px; }
 @media (max-width: 520px) { .two { grid-template-columns: 1fr; } }
+
+/* V12.1 — gestion des comptes simplifiée */
+.form-help{margin:12px 0 0;padding:11px 12px;border-radius:13px;background:color-mix(in srgb,var(--primary) 8%,var(--card));color:var(--muted);font-size:.78rem;line-height:1.4}.account-card .actions{opacity:.78}.account-card:hover .actions{opacity:1}

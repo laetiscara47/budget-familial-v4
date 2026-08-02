@@ -165,7 +165,27 @@ const accountOptions=()=>state.accounts.map(a=>[a.id,a.name]);
 const categoryOptions=()=>state.categories.map(c=>[c,c]);
 function formData(form){return Object.fromEntries(new FormData(form).entries())}
 
-function accountModal(a={}){openModal(a.id?'Modifier le compte':'Nouveau compte',field('Nom','name','text',a.name||'','required')+field('Type','type','text',a.type||'Compte courant','required')+`<div class="two">${field('Solde initial','opening','number',a.opening||0,'step="0.01" required')}${field('Icône','icon','text',a.icon||'🏦','maxlength="3"')}</div>`+field('Couleur','color','color',a.color||'#6356c7')+`<label class="check"><input name="main" type="checkbox" ${a.main?'checked':''}> Compte principal</label>`,fd=>{if(fd.main)state.accounts.forEach(x=>x.main=false);const obj={...a,id:a.id||uid(),name:fd.name.trim(),type:fd.type.trim(),opening:Number(fd.opening),icon:fd.icon||'🏦',color:fd.color||'#6356c7',main:!!fd.main};if(!a.id)state.accounts.push(obj);else Object.assign(state.accounts.find(x=>x.id===a.id),obj);if(!state.accounts.some(x=>x.main))state.accounts[0].main=true;save();toast('Compte enregistré')})}
+function accountModal(a={}){
+  const isEdit=!!a.id;
+  const currentBalance=isEdit?accountBalance(a):0;
+  const types=[['Compte courant','Compte courant'],['Livret / Épargne','Livret / Épargne'],['Espèces','Espèces'],['Carte prépayée','Carte prépayée'],['Autre','Autre']];
+  const icons=[['🏦','🏦 Banque'],['💳','💳 Carte'],['💰','💰 Épargne'],['👛','👛 Espèces'],['🏠','🏠 Maison'],['🚗','🚗 Voiture'],['🎯','🎯 Projet'],['⭐','⭐ Autre']];
+  const html=field('Nom du compte','name','text',a.name||'','required placeholder="Ex. Compte courant"')+
+    selectField('Type de compte','type',types,a.type||'Compte courant')+
+    `<div class="two">${field(isEdit?'Solde actuel souhaité':'Solde de départ','balance','number',isEdit?currentBalance:(a.opening||0),'step="0.01" required')}${selectField('Icône','icon',icons,a.icon||'🏦')}</div>`+
+    field('Couleur','color','color',a.color||'#6356c7')+
+    `<label class="check"><input name="main" type="checkbox" ${a.main?'checked':''}> Utiliser comme compte principal</label>`+
+    `<p class="form-help">${isEdit?'Le solde actuel sera ajusté sans modifier vos opérations déjà enregistrées.':'Vous pourrez modifier ce solde plus tard.'}</p>`;
+  openModal(isEdit?'Modifier le compte':'Nouveau compte',html,fd=>{
+    const desiredBalance=Number(fd.balance)||0;
+    const transactionNet=isEdit?state.transactions.filter(t=>t.accountId===a.id).reduce((sum,t)=>sum+(t.type==='income'?t.amount:-t.amount),0):0;
+    if(fd.main)state.accounts.forEach(x=>x.main=false);
+    const obj={...a,id:a.id||uid(),name:fd.name.trim(),type:fd.type,opening:desiredBalance-transactionNet,icon:fd.icon||'🏦',color:fd.color||'#6356c7',main:!!fd.main};
+    if(!a.id)state.accounts.push(obj);else Object.assign(state.accounts.find(x=>x.id===a.id),obj);
+    if(!state.accounts.some(x=>x.main))state.accounts[0].main=true;
+    save();toast(isEdit?'Compte modifié':'Compte créé');
+  })
+}
 function txModal(t={}){openModal(t.id?'Modifier l’opération':'Nouvelle opération',selectField('Type','type',[['expense','Dépense'],['income','Recette']],t.type||'expense')+field('Libellé','label','text',t.label||'','required')+`<div class="two">${field('Montant','amount','number',t.amount||'','step="0.01" min="0" required')}${field('Date','date','date',t.date||today(),'required')}</div>`+selectField('Compte','accountId',accountOptions(),t.accountId||state.accounts.find(a=>a.main)?.id||state.accounts[0].id)+selectField('Catégorie','category',categoryOptions(),t.category||state.categories[0]),fd=>{const obj={...t,id:t.id||uid(),type:fd.type,label:fd.label.trim(),amount:Number(fd.amount),date:fd.date,accountId:fd.accountId,category:fd.category};if(!t.id)state.transactions.push(obj);else Object.assign(state.transactions.find(x=>x.id===t.id),obj);save();toast('Opération enregistrée')})}
 function transferModal(){openModal('Nouveau virement',selectField('Depuis','from',accountOptions(),state.accounts[0]?.id)+selectField('Vers','to',accountOptions(),state.accounts[1]?.id||state.accounts[0]?.id)+field('Montant','amount','number','','step="0.01" min="0" required')+field('Date','date','date',today(),'required')+field('Libellé','label','text','Virement'),fd=>{if(fd.from===fd.to){alert('Choisissez deux comptes différents');return false}const id=uid(),amount=Number(fd.amount);state.transactions.push({id:uid(),type:'expense',label:fd.label,amount,date:fd.date,accountId:fd.from,category:'Virement',transferId:id},{id:uid(),type:'income',label:fd.label,amount,date:fd.date,accountId:fd.to,category:'Virement',transferId:id});save();toast('Virement enregistré')})}
 function budgetModal(b={}){openModal(b.id?'Modifier le budget':'Nouveau budget',selectField('Catégorie','name',categoryOptions(),b.name||state.categories[0])+`<div class="two">${field('Montant maximum','limit','number',b.limit||'','step="0.01" min="0" required')}${field('Icône','icon','text',b.icon||'🎯','maxlength="3"')}</div>`,fd=>{const obj={...b,id:b.id||uid(),name:fd.name,limit:Number(fd.limit),icon:fd.icon||'🎯'};if(!b.id)state.budgets.push(obj);else Object.assign(state.budgets.find(x=>x.id===b.id),obj);save();toast('Budget enregistré')})}
