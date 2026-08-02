@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#6356c7">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Mon Budget">
+  <title>Mon Budget Familial</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="stylesheet" href="style.css?v=11.0">
+</head>
+<body>
+<div class="app-shell">
+  <header class="topbar">
+    <div><span class="eyebrow">BUDGET FAMILIAL</span><h1>Mon Budget</h1></div>
+    <button id="themeBtn" class="icon-btn" aria-label="Changer le thème">☀️</button>
+  </header>
+
+  <main>
+    <section class="page active" data-page="home">
+      <div class="month-picker card"><button id="prevMonth" class="icon-btn">‹</button><div><small>Mois affiché</small><strong id="monthLabel"></strong></div><button id="nextMonth" class="icon-btn">›</button></div>
+      <article class="hero"><span>Solde total</span><strong id="globalBalance">0,00 €</strong><small id="heroHint">Tous vos comptes</small></article>
+      <div class="metrics"><article><span>Recettes</span><b id="incomeTotal">0 €</b></article><article><span>Dépenses</span><b id="expenseTotal">0 €</b></article><article><span>Reste à vivre</span><b id="remainingTotal">0 €</b></article><article><span>À payer</span><b id="plannedTotal">0 €</b></article></div>
+      <section class="assistant-card card"><div class="assistant-title"><span>✨</span><div><small>ASSISTANT BUDGET</small><h2>Votre point du mois</h2></div></div><div id="assistantMessages" class="assistant-messages"></div></section>
+      <div class="section-head"><div><small>VUE RAPIDE</small><h2>Mes comptes</h2></div><button data-action="account-new" class="link-btn">+ Compte</button></div>
+      <div id="homeAccounts" class="stack"></div>
+      <div class="section-head"><div><small>À VENIR</small><h2>Prochaines échéances</h2></div><button data-go="budget" class="link-btn">Voir le calendrier</button></div>
+      <div id="upcomingItems" class="stack"></div>
+      <div class="section-head"><div><small>RÉCENT</small><h2>Dernières opérations</h2></div><button data-go="transactions" class="link-btn">Voir tout</button></div>
+      <div id="recentTransactions" class="stack"></div>
+    </section>
+
+    <section class="page" data-page="accounts">
+      <div class="section-head top"><div><small>GESTION</small><h2>Comptes</h2></div><button data-action="account-new" class="primary">+ Ajouter</button></div>
+      <div id="accountsList" class="stack"></div>
+    </section>
+
+    <section class="page" data-page="transactions">
+      <div class="section-head top"><div><small>HISTORIQUE</small><h2>Opérations</h2></div><button data-action="tx-new" class="primary">+ Ajouter</button></div>
+      <div class="filters card"><input id="searchInput" placeholder="Rechercher un libellé…"><select id="typeFilter"><option value="all">Toutes</option><option value="expense">Dépenses</option><option value="income">Recettes</option></select><select id="accountFilter"><option value="all">Tous les comptes</option></select><select id="categoryFilter"><option value="all">Toutes les catégories</option></select><input id="dateFromFilter" type="date" aria-label="Date de début"><input id="dateToFilter" type="date" aria-label="Date de fin"><select id="sortFilter"><option value="date-desc">Plus récentes</option><option value="date-asc">Plus anciennes</option><option value="amount-desc">Montant décroissant</option><option value="amount-asc">Montant croissant</option></select><button id="clearFilters" class="secondary filter-reset" type="button">Effacer les filtres</button></div>
+      <div class="quick-actions"><button data-action="tx-new">＋ Dépense / recette</button><button data-action="transfer-new">⇄ Virement</button></div>
+      <div id="transactionsList" class="stack"></div>
+    </section>
+
+    <section class="page" data-page="budget">
+      <div class="section-head top"><div><small>PRÉVISIONS</small><h2>Budget & échéances</h2></div><button data-action="budget-new" class="primary">+ Budget</button></div>
+      <article class="summary card"><span>Budget total du mois</span><strong id="budgetTotal">0 €</strong></article>
+      <div id="budgetList" class="stack"></div>
+      <div class="section-head"><div><small>REVENUS</small><h2>Recettes récurrentes</h2></div><button data-action="income-recurring-new" class="link-btn">+ Recette</button></div>
+      <div id="recurringIncomeList" class="stack"></div>
+      <div class="section-head"><div><small>PRÉLÈVEMENTS</small><h2>Charges fixes</h2></div><button data-action="charge-new" class="link-btn">+ Charge</button></div>
+      <div id="chargesList" class="stack"></div>
+      <div class="section-head"><div><small>CALENDRIER</small><h2>Vue du mois</h2></div></div>
+      <div id="calendar" class="calendar card"></div>
+      <div id="calendarDayDetail" class="stack calendar-detail"></div>
+      <div class="section-head"><div><small>ÉVOLUTION</small><h2>Les 6 derniers mois</h2></div></div>
+      <div id="monthlyChart" class="card monthly-chart"></div>
+      <div class="section-head"><div><small>ANALYSE</small><h2>Dépenses par catégorie</h2></div></div>
+      <div id="categoryStats" class="card stats"></div>
+    </section>
+
+    <section class="page" data-page="settings">
+      <div class="section-head top"><div><small>APPLICATION</small><h2>Paramètres</h2></div></div>
+      <div class="settings-grid">
+        <button id="exportBtn" class="setting"><b>⬇️ Sauvegarder</b><span>Télécharger toutes les données</span></button>
+        <label class="setting"><b>⬆️ Restaurer</b><span>Importer une sauvegarde</span><input id="importInput" type="file" accept="application/json" hidden></label>
+        <button id="csvBtn" class="setting"><b>📄 Exporter CSV</b><span>Ouvrir les opérations dans Excel</span></button>
+        <button data-action="categories" class="setting"><b>🏷️ Catégories</b><span>Ajouter ou supprimer vos catégories</span></button>
+        <button id="resetBtn" class="setting danger"><b>🗑️ Tout effacer</b><span>Repartir avec une application vide</span></button>
+      </div>
+      <article class="card info"><b>Confidentialité</b><p>Les données restent enregistrées sur cet appareil. Faites une sauvegarde régulièrement.</p></article>
+      <article class="card info"><b>Version</b><p>Budget Familial V11.0 — version stable</p></article>
+    </section>
+  </main>
+
+  <button class="fab" data-action="tx-new" aria-label="Ajouter">+</button>
+  <nav class="bottom-nav"><button class="active" data-nav="home"><span>🏠</span>Accueil</button><button data-nav="accounts"><span>💳</span>Comptes</button><button data-nav="transactions"><span>↕️</span>Opérations</button><button data-nav="budget"><span>📅</span>Budget</button><button data-nav="settings"><span>⚙️</span>Réglages</button></nav>
+</div>
+<dialog id="modal"><form id="modalForm"><div class="modal-head"><h3 id="modalTitle"></h3><button type="button" id="modalClose" class="icon-btn">✕</button></div><div id="modalBody"></div><div class="modal-actions"><button type="button" id="modalCancel" class="secondary">Annuler</button><button type="submit" class="primary">Enregistrer</button></div></form></dialog>
+<div id="toast" role="status"></div>
+<script src="app.js?v=11.0"></script>
+</body>
+</html>
